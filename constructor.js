@@ -17,7 +17,7 @@ var frie = [];
 var shootingPressed = false;
 var shootCountdown = false;
 var deathAnimation;
-var hitSound = new Audio('eat3.mp3');
+var hitSound = new Audio('eat.mp3');
 var deathSound = new Audio('deathsSound.mp3');
 
 
@@ -201,6 +201,7 @@ function component(width, height, color, x, y, type) {
       var leftEdge = 0;
       if (this.x > rightEdge) {
         this.direction = 1;
+        this.x = (rightEdge - this.width);
         this.y += this.height/2;
       }
       if (this.x < leftEdge) {
@@ -253,7 +254,7 @@ function component(width, height, color, x, y, type) {
 function updateGameArea() {
     myGameArea.clear();
     bg.update();
-    nugget.update();
+    //nugget.update();
     fries();
     bettys();
     jack.newPos();
