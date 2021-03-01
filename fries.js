@@ -12,12 +12,9 @@ function fries() {
     for (g = 0; g < betty.length; g += 1) {
       if (frie[i].hit(betty[g])) {
         if (betty[g].nrHits(3) == false) {
-          console.log(betty[g].hits);
           betty[g].width *= 1.15;
-          //betty[g].height *= 1.05;
           hitSound.play();
           frie.splice(i, 1);
-          console.log(frie);
         } else if (betty[g].nrHits(4)) {
             frie.splice(i, 1);
             deathAnimation.x = betty[g].x;
@@ -29,10 +26,9 @@ function fries() {
       }
     }
   }
-  if (frie.length > 0) {
+  if (frie.length > 0) { //denna if satsen tar bort alla skott som har kommuit utanför skärmen med 100 units, och eftersom att den körs hela tiden räcker det att jag kollar på det tidigast skapade nuvarande frie eftersom den är den som kommit längst
     if (frie[0].y < -100 ) {
-      frie.shift();
-      console.log(frie.length);
+      frie.shift(); //shift(); tar bort index[0] och sedan skiftar alla andra så att om det fanns en index[1] skulle den nu vara index[0]
     }
   }
 

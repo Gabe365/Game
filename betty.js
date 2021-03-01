@@ -1,5 +1,8 @@
   function bettys(){
-
+    if (!firstBetty && sleep(0,"timer")) {
+      spawnBettyCountdown = true;
+      firstBetty = true;
+    }
     if(sleep(4, "spawnBettyCountdown")){
         betty.push(new component(136, 127, "Betty.png", 1, 0, "image"));
         betty[betty.length-1].direction = 0; //gör att den senast skapade alltid börjar åka åt höger

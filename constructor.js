@@ -1,6 +1,6 @@
 var jack;
 var bg;
-var speed = 0;
+//var speed = 0;
 var canvasWidth = 1400;
 var canvasHeight = 640;
 var rightPressed = false;
@@ -19,32 +19,40 @@ var shootCountdown = false;
 var deathAnimation;
 var hitSound = new Audio('eat.mp3');
 var deathSound = new Audio('deathsSound.mp3');
-
+var gameState = "paused";
+var rect;
+var bgMusic = new Audio('BOAction.mp3');
+var firstBetty = false;
+var date1;
 
 function startGame() {
     jack = new component(70, 114, "jack.png",(canvasWidth/2)-35 ,canvasHeight-114, "image");
     bg = new component(canvasWidth, canvasHeight, "bakgrund.png",0,0, "image");
     nugget = new component(100, 100, "nugget.png",100,0, "image");
     deathAnimation = new component(200, 170, "deathAn.png", 0, 0, "image");
+    rect = new component(2000,1700, "white", 0,0);
     myGameArea.start();
 
 }
 function sleep(seconds, countdown) {
 switch (countdown) {
   case "spawnBettyCountdown":
-    if (spawnBettyCountdown == true) {
-      spawnBettyCountdown = false;
-      return true;
-    } else if (timeBetty == null) {
-      timeBetty = (Date.now() + (seconds * 1000));
-      return false;
-    } else if (timeBetty !== null) {
-      if (timeBetty < Date.now()) {
-        spawnBettyCountdown = true;
-        timeBetty = null;
+    if (firstBetty) {
+      if (spawnBettyCountdown == true) {
+        spawnBettyCountdown = false;
+        return true;
+      } else if (timeBetty == null) {
+        timeBetty = (Date.now() + (seconds * 1000));
         return false;
+      } else if (timeBetty !== null) {
+        if (timeBetty < Date.now()) {
+          spawnBettyCountdown = true;
+          timeBetty = null;
+          return false;
+          }
         }
-      }
+    }
+
     break;
   case "shootCountdown":
     if (shootCountdown == true) {
@@ -59,6 +67,15 @@ switch (countdown) {
         timeShot = null;
         return false;
         }
+      }
+    break;
+    case "timer":
+      var date2 = new Date();
+      var diff = date2 - date1;
+      if (diff > 0) {
+        return true;
+      } else {
+        return false;
       }
     break;
 }
@@ -86,6 +103,13 @@ var myGameArea = {
           }
           if (e.key == "k") {
             shootingPressed = true;
+          }
+          if (e.keyCode == 27) { //Klicka esc för att pausa om man spelar eller starta igen om man är pausad
+            if (gameState == "playing") {
+              gameState = "paused";
+            } else if (gameState == "paused") {
+              gameState = "playing";
+            }
           }
         });
         window.addEventListener('keyup', function (e) {
@@ -122,7 +146,7 @@ function component(width, height, color, x, y, type) {
     this.height = height;
     this.speedX = 0;
     this.speedY = 0;
-    this.gravity = 0.18;
+    this.gravity = 0.215;
     this.gravitySpeed = 0;
     this.x = x;
     this.y = y;
@@ -146,7 +170,7 @@ function component(width, height, color, x, y, type) {
           this.y += this.speedY + this.gravitySpeed;
         }
         else if (boosterPressed == false) {
-          this.y += this.speedY + this.gravitySpeed + (2*speed);
+          this.y += this.speedY + this.gravitySpeed;
         }
 
         this.x += this.speedX;
@@ -171,28 +195,18 @@ function component(width, height, color, x, y, type) {
 
     };
 
-  /*  this.americans = function() {
-      this.x += this.speedX;
-      this.y += this.speedY;
-      this.turnAtEdge();
-      this.hitBottomAmericans();
-    }; */
-
-
-
     this.hitBottom = function() {
       var bottom = myGameArea.canvas.height - this.height;
       if (this.y > bottom) {
         this.y = bottom;
         this.gravitySpeed = 0;
-        speed = 0;
+        this.speedY = 0;
       }
     };
     this.hitBottomAmericans = function() {
       var bottom = myGameArea.canvas.height - this.height;
       if (this.y > bottom) {
         this.y = bottom;
-        this.gravitySpeed = 0;
       }
     };
 
@@ -202,7 +216,7 @@ function component(width, height, color, x, y, type) {
       if (this.x > rightEdge) {
         this.direction = 1;
         this.x = (rightEdge - this.width);
-        this.y += this.height/2;
+        this.y += this.height;
       }
       if (this.x < leftEdge) {
         this.x = leftEdge;
@@ -252,13 +266,32 @@ function component(width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
+  switch (gameState) {
+    case "playing":
+      if (bgMusic.paused) {
+        if (!firstBetty) {
+          date1 = (Date.now() + (14 * 1000));
+        }
+        bgMusic.play();
+        console.log(date1);
+      }
+      myGameArea.clear();
+      bg.update();
+      //nugget.update();
+      fries();
+      bettys();
+      jack.newPos();
+      jack.update();
+      jackMovement();
+      //deathAnimation.update();
+    break;
+
+    case "paused":
+    if (!bgMusic.paused) {
+      bgMusic.pause();
+    }
     myGameArea.clear();
-    bg.update();
-    //nugget.update();
-    fries();
-    bettys();
-    jack.newPos();
-    jack.update();
-    jackMovement();
-    //deathAnimation.update();
+    rect.update();
+      break;
+  }
 }
