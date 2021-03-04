@@ -24,13 +24,23 @@ var rect;
 var bgMusic = new Audio('BOAction.mp3');
 var firstBetty = false;
 var date1;
+var stateText;
+var pressESC;
+var desc;
+var info = "Earth is no more...\nwe the people escaped before the inevetable to a planet outside the galaxay.\nThe Americans shattered our dreams and hopes of a sustainable future on Earth.\nThey drove mother Earth to it's limits.\nNow that they've found us, a trail of death and devastation is upon us.\nHowever we know their weakness...\nThey can't resist fatty food and we have an limitless supply of deep-fried fries.\nYou're our best soldier, shower the Americans in what they crave\nVictory shall be ours!";
 
 function startGame() {
     jack = new component(70, 114, "jack.png",(canvasWidth/2)-35 ,canvasHeight-114, "image");
     bg = new component(canvasWidth, canvasHeight, "bakgrund.png",0,0, "image");
     nugget = new component(100, 100, "nugget.png",100,0, "image");
     deathAnimation = new component(200, 170, "deathAn.png", 0, 0, "image");
-    rect = new component(2000,1700, "white", 0,0);
+    rect = new component(2000,1700, "black", 0,0);
+    stateText = new component("64px cod","Start Mission", "white", canvasWidth/2 ,100, "text");
+    stateText.textAlign = "center";
+    pressESC = new component("32px cod","Press ESC to play", "white",10,canvasHeight-10,"text");
+    pressESC.textAlign = "left";
+    desc = new component("24px brodtext", info, "white", 30, 150, "text");
+    desc.textAlign = "left";
     myGameArea.start();
 
 }
@@ -153,11 +163,27 @@ function component(width, height, color, x, y, type) {
 
     this.update = function() {
         ctx = myGameArea.context;
-        if (type == "image") {
+        if (this.type == "image") {
             ctx.drawImage(this.image,
                 this.x,
                 this.y,
                 this.width, this.height);
+        } else if (this.type == "text") {
+          this.text = height;
+          ctx.font = this.width;
+          ctx.textAlign = this.textAlign;
+          ctx.fillStyle = color;
+          if(height.includes("\n")) {
+            this.y = y;
+            this.text = height.split("\n");
+            for (var i = 0; i < this.text.length; i++) {
+              ctx.fillText(this.text[i], this.x, this.y);
+              this.y += 45;
+              //console.log("Filled");
+            }
+          } else {
+            ctx.fillText(this.text, this.x, this.y);
+          }
         } else {
             ctx.fillStyle = color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -270,7 +296,7 @@ function updateGameArea() {
     case "playing":
       if (bgMusic.paused) {
         if (!firstBetty) {
-          date1 = (Date.now() + (14 * 1000));
+          date1 = (Date.now() + (13.8 * 1000));
         }
         bgMusic.play();
         console.log(date1);
@@ -292,6 +318,14 @@ function updateGameArea() {
     }
     myGameArea.clear();
     rect.update();
+    stateText.update();
+    pressESC.update();
+    desc.update();
+    for (i = 0; i < desc.length; i += 1) {
+      console.log("Updates");
+      desc[i].update();
+    }
+
       break;
   }
 }
