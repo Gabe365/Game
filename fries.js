@@ -1,6 +1,6 @@
 function fries() {
   if (shootingPressed) {
-    if (sleep(0.5, "shootCountdown")) {
+    if (sleep(firerate, "shootCountdown")) {
       frie.push(new component(5, 36.5, "fries.png", (jack.x + jack.width/2), jack.y, "image" ));
       frie[frie.length-1].speedY = 20;
     }

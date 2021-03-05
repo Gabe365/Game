@@ -7,6 +7,8 @@ var rightPressed = false;
 var leftPressed = false;
 var boosterPressed = false;
 var onGround = true;
+var pressingI = false;
+var pressingO = false;
 var nuggetDirection = Math.floor(Math.random() * 2);
 var americanDirection = Math.floor(Math.random() * 2); //gör detta när skapas
 var betty = [];
@@ -27,30 +29,44 @@ var date1;
 var stateText;
 var pressESC;
 var desc;
+var secretUpgrade = "Secret...";
 var info = "Earth is no more...\nwe the people escaped before the inevetable to a planet outside the galaxay.\nThe Americans shattered our dreams and hopes of a sustainable future on Earth.\nThey drove mother Earth to it's limits.\nNow that they've found us, a trail of death and devastation is upon us.\nHowever we know their weakness...\nThey can't resist fatty food and we have an limitless supply of deep-fried fries.\nYou're our best soldier, shower the Americans in what they crave\nVictory shall be ours!";
-var pauseInfo = "Controlls:\nMove with \"A\" and \"D\"\nShoot with \"K\"\nJump with spacebar\n\nTip: Remember that you can buy upgrades or clear bottom floor with DB\nDB hearts stands for diabetes hearts and it's a common curency here\ngained from killing Americans; they truly are something special.";
-var money = 0;
+var pauseInfo = "Controlls:\nMove with [A] and [D]\n[K] - Shoot\n[Spacebar] - Jump\nUpgrades:\n[I] - Increase shoot speed\n[O] - Clears Americans off floor\n[P] - " +secretUpgrade+"\nTip: Remember that you can buy upgrades or clear bottom floor with DB\nDB hearts stands for diabetes hearts and it's a common curency here\ngained from killing Americans; they truly are something special.";
+var money = 100;
 var displayMnScr;
 var score = 0;
 var displayScore;
 var spawnrate = 4;
 var clearFloor;
+var clearFloorText;
+var clearFloorCost = 30;
+var doubleTap;
+var doubleTapText;
+var doubleTapCost = 10;
+var onlyBuyOnce = true;
+var firerate = 0.7;
 
 function startGame() {
     jack = new component(70, 114, "jack.png",(canvasWidth/2)-35 ,canvasHeight-114, "image");
     bg = new component(canvasWidth, canvasHeight, "bakgrund.png",0,0, "image");
     nugget = new component(100, 100, "nugget.png",100,0, "image");
     deathAnimation = new component(200, 170, "deathAn.png", 0, 0, "image");
-    clearFloor = new component(50,50, "BettyRedCircle.png", canvasWidth - 150, canvasHeight-75, "image");
-    rect = new component(2000,1700, "black", 0,0);
+    clearFloor = new component(50,50, "BettyRedCircle.png", canvasWidth - 100, canvasHeight-100, "image");
+    doubleTap = new component(50, 50, "friesBadge.png", canvasWidth-100, canvasHeight-200, "image");
+    rect = new component(2000, 1700, "black", 0,0);
     stateText = new component("64px cod","Start Mission", "white", canvasWidth/2 ,100, "text");
     stateText.textAlign = "center";
     pressESC = new component("32px cod","Press ESC to play", "white",10,canvasHeight-10,"text");
     pressESC.textAlign = "left";
     desc = new component("24px brodtext", info, "white", 30, 150, "text");
     desc.textAlign = "left";
+    desc.offsetSpace = 20;
     displayMnScr = new component("32px cod", "Score: "+score+"\nDB hearts: "+money, "white", 10, 40, "text");
     displayMnScr.textAlign = "left";
+    clearFloorText = new component("16px brodtext", "[O]\nClear Floor\n"+clearFloorCost+" DB", "white", canvasWidth - 75, canvasHeight-35, "text");
+    clearFloorText.textAlign = "center";
+    doubleTapText = new component("16px brodtext", "[I]\nDouble Tap\n"+doubleTapCost+" DB", "white", canvasWidth - 75, canvasHeight-135, "text");
+    doubleTapText.textAlign = "center";
     myGameArea.start();
 
 }
@@ -126,16 +142,16 @@ var myGameArea = {
         this.interval = setInterval(updateGameArea, 20);
 
         window.addEventListener('keydown', function (e) {
-          if (e.key == "a"){
+          if (e.keyCode == 65){
             leftPressed = true;
           }
-          if (e.key == "d") {
+          if (e.keyCode == 68) {
             rightPressed = true;
           }
           if (e.keyCode == 32) {
             boosterPressed = true;
           }
-          if (e.key == "k") {
+          if (e.keyCode == 75) {
             shootingPressed = true;
           }
           if (e.keyCode == 27) { //Klicka esc för att pausa om man spelar eller starta igen om man är pausad
@@ -149,19 +165,33 @@ var myGameArea = {
               gameState = "playing";
             }
           }
+          if (e.keyCode == 73) { // i klickades
+          pressingI = true;
+          }
+          if (e.keyCode == 79) {//o klickades
+          pressingO = true;
+          }
         });
         window.addEventListener('keyup', function (e) {
-          if (e.key == "a"){
+          if (e.keyCode == 65){
             leftPressed = false;
           }
-          if (e.key == "d") {
+          if (e.keyCode == 68) {
             rightPressed = false;
           }
           if (e.keyCode == 32) {
             boosterPressed = false;
           }
-          if (e.key == "k") {
+          if (e.keyCode == 75) {
             shootingPressed = false;
+          }
+          if (e.keyCode == 73) { // i släpptes
+          pressingI = false;
+          onlyBuyOnce = true;
+          }
+          if (e.keyCode == 79) {//o släpptes
+          pressingO = false;
+          onlyBuyOnce = true;
           }
         });
 
@@ -204,10 +234,14 @@ function component(width, height, color, x, y, type) {
           if(height.includes("\n")) {
             this.y = y;
             this.text2 = this.text.split("\n");
+            this.verticalSpace = this.width.split("px "); //dehär bestämmer hur mkt den ska gå nedåt sen och eftersom jag splitar vid "px " kmr [0] vara X alltså storleken i pixlar fast som en string så de mst göras om till en int för att använda
             for (var i = 0; i < this.text2.length; i++) {
               ctx.fillText(this.text2[i], this.x, this.y);
-              this.y += 45;
-              //console.log("Filled");
+              if (this.offsetSpace !== undefined) { //detta kollar om det finns en offsetSpace definerad vilket ska göra radasvtåndet större för estetiska själ
+                this.y += (parseInt(this.verticalSpace[0]) + this.offsetSpace); //parseInt() gör en string till int
+              } else {
+                this.y += (parseInt(this.verticalSpace[0])); //om det inte finns en offsetSpace ska den skrivas precis under sig själv
+              }
             }
           } else {
             ctx.fillText(this.text, this.x, this.y);
@@ -239,14 +273,6 @@ function component(width, height, color, x, y, type) {
       this.y -= this.speedY;
       this.turnAtEdge();
       this.hitBottomAmericans();
-    };
-
-    this.powerUps = function() {
-      this.x += this.speedX;
-      this.y += this.speedY;
-      this.hitBottom();
-      this.hitEdge();
-
     };
 
     this.hitBottom = function() {
@@ -343,10 +369,14 @@ function updateGameArea() {
       fries();
       displayMnScr.update();
       clearFloor.update();
+      clearFloorText.update();
+      doubleTap.update();
+      doubleTapText.update();
       bettys();
       jack.newPos();
       jack.update();
       jackMovement();
+      powerUps();
       //deathAnimation.update();
     break;
 
@@ -367,6 +397,9 @@ function updateGameArea() {
 
       break;
       case "paused":
+      if (!bgMusic.paused) {
+        bgMusic.pause();
+      }
       desc.text = pauseInfo;
       rect.update();
       stateText.update();

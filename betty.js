@@ -9,7 +9,7 @@
         betty[betty.length-1].hits = 0;
       }
 
-    for (i = 0; i < betty.length; i += 1) {
+    for (i = 0; i < betty.length; i++) {
           betty[i].newPosBetty();
           betty[i].update();
           betty[i].turnAtEdge();
@@ -27,7 +27,7 @@
             }
 
          if (betty[i].hit(jack)) {
-           console.log("Jack nuddar betty");
+
               }
           }
   }
