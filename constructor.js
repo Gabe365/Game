@@ -33,13 +33,15 @@ var money = 0;
 var displayMnScr;
 var score = 0;
 var displayScore;
-var spawnrate;
+var spawnrate = 4;
+var clearFloor;
 
 function startGame() {
     jack = new component(70, 114, "jack.png",(canvasWidth/2)-35 ,canvasHeight-114, "image");
     bg = new component(canvasWidth, canvasHeight, "bakgrund.png",0,0, "image");
     nugget = new component(100, 100, "nugget.png",100,0, "image");
     deathAnimation = new component(200, 170, "deathAn.png", 0, 0, "image");
+    clearFloor = new component(50,50, "BettyRedCircle.png", canvasWidth - 150, canvasHeight-75, "image");
     rect = new component(2000,1700, "black", 0,0);
     stateText = new component("64px cod","Start Mission", "white", canvasWidth/2 ,100, "text");
     stateText.textAlign = "center";
@@ -102,9 +104,11 @@ function reasignMnScr() {
   displayMnScr.text = "Score: "+score+"\nDB hearts: "+money;
 }
 function difficulty() {
-  if (score <21) {
+  if (score == 0) {
+    spawnrate = 4;
+  } else if (score <21) {
     spawnrate *= 0.993;
-  } else if (41 > score > 21) {
+  } else if (score > 21 && score < 41) {
     spawnrate *= 0.98;
   } else if (score > 99) {
     spawnrate = 2;
@@ -326,7 +330,6 @@ function component(width, height, color, x, y, type) {
 function updateGameArea() {
   switch (gameState) {
     case "playing":
-    difficulty();
       if (bgMusic.paused) {
         if (!firstBetty) {
           date1 = (Date.now() + (13.8 * 1000));
@@ -339,6 +342,7 @@ function updateGameArea() {
       //nugget.update();
       fries();
       displayMnScr.update();
+      clearFloor.update();
       bettys();
       jack.newPos();
       jack.update();

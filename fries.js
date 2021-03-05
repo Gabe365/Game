@@ -25,6 +25,7 @@ function fries() {
             money++;
             score++;
             reasignMnScr();
+            difficulty();
         }
       }
     }
