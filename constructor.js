@@ -19,7 +19,7 @@ var shootCountdown = false;
 var deathAnimation;
 var hitSound = new Audio('eat.mp3');
 var deathSound = new Audio('deathsSound.mp3');
-var gameState = "paused";
+var gameState = "startMenu";
 var rect;
 var bgMusic = new Audio('BOAction.mp3');
 var firstBetty = false;
@@ -28,6 +28,12 @@ var stateText;
 var pressESC;
 var desc;
 var info = "Earth is no more...\nwe the people escaped before the inevetable to a planet outside the galaxay.\nThe Americans shattered our dreams and hopes of a sustainable future on Earth.\nThey drove mother Earth to it's limits.\nNow that they've found us, a trail of death and devastation is upon us.\nHowever we know their weakness...\nThey can't resist fatty food and we have an limitless supply of deep-fried fries.\nYou're our best soldier, shower the Americans in what they crave\nVictory shall be ours!";
+var pauseInfo = "Controlls:\nMove with \"A\" and \"D\"\nShoot with \"K\"\nJump with spacebar\n\nTip: Remember that you can buy upgrades or clear bottom floor with DB\nDB hearts stands for diabetes hearts and it's a common curency here\ngained from killing Americans; they truly are something special.";
+var money = 0;
+var displayMnScr;
+var score = 0;
+var displayScore;
+var spawnrate;
 
 function startGame() {
     jack = new component(70, 114, "jack.png",(canvasWidth/2)-35 ,canvasHeight-114, "image");
@@ -41,6 +47,8 @@ function startGame() {
     pressESC.textAlign = "left";
     desc = new component("24px brodtext", info, "white", 30, 150, "text");
     desc.textAlign = "left";
+    displayMnScr = new component("32px cod", "Score: "+score+"\nDB hearts: "+money, "white", 10, 40, "text");
+    displayMnScr.textAlign = "left";
     myGameArea.start();
 
 }
@@ -90,6 +98,18 @@ switch (countdown) {
     break;
 }
 }
+function reasignMnScr() {
+  displayMnScr.text = "Score: "+score+"\nDB hearts: "+money;
+}
+function difficulty() {
+  if (score <21) {
+    spawnrate *= 0.993;
+  } else if (41 > score > 21) {
+    spawnrate *= 0.98;
+  } else if (score > 99) {
+    spawnrate = 2;
+  }
+}
 
 var myGameArea = {
     canvas : document.createElement("canvas"),
@@ -117,7 +137,11 @@ var myGameArea = {
           if (e.keyCode == 27) { //Klicka esc för att pausa om man spelar eller starta igen om man är pausad
             if (gameState == "playing") {
               gameState = "paused";
+              stateText.text = "Game Paused";
+              pressESC.text = "Press ESC to continue";
             } else if (gameState == "paused") {
+              gameState = "playing";
+            } else if (gameState == "startMenu") {
               gameState = "playing";
             }
           }
@@ -148,6 +172,7 @@ var myGameArea = {
 
 function component(width, height, color, x, y, type) {
     this.type = type;
+    this.text = height;
     if (type == "image") {
         this.image = new Image();
         this.image.src = color;
@@ -169,15 +194,14 @@ function component(width, height, color, x, y, type) {
                 this.y,
                 this.width, this.height);
         } else if (this.type == "text") {
-          this.text = height;
           ctx.font = this.width;
           ctx.textAlign = this.textAlign;
           ctx.fillStyle = color;
           if(height.includes("\n")) {
             this.y = y;
-            this.text = height.split("\n");
-            for (var i = 0; i < this.text.length; i++) {
-              ctx.fillText(this.text[i], this.x, this.y);
+            this.text2 = this.text.split("\n");
+            for (var i = 0; i < this.text2.length; i++) {
+              ctx.fillText(this.text2[i], this.x, this.y);
               this.y += 45;
               //console.log("Filled");
             }
@@ -240,14 +264,22 @@ function component(width, height, color, x, y, type) {
       var rightEdge = myGameArea.canvas.width - this.width;
       var leftEdge = 0;
       if (this.x > rightEdge) {
-        this.direction = 1;
-        this.x = (rightEdge - this.width);
-        this.y += this.height;
+        if (this.direction == 1){
+          this.x = rightEdge;
+        } else {
+          this.direction = 1;
+          this.x = rightEdge;
+          this.y += this.height;
+        }
       }
       if (this.x < leftEdge) {
-        this.x = leftEdge;
-        this.direction = 0;
-        this.y += this.height;
+        if (this.direction == 0) {
+          this.x = leftEdge;
+        } else {
+          this.x = leftEdge;
+          this.direction = 0;
+          this.y += this.height;
+        }
       }
     };
     this.hitEdge = function() {
@@ -294,6 +326,7 @@ function component(width, height, color, x, y, type) {
 function updateGameArea() {
   switch (gameState) {
     case "playing":
+    difficulty();
       if (bgMusic.paused) {
         if (!firstBetty) {
           date1 = (Date.now() + (13.8 * 1000));
@@ -305,6 +338,7 @@ function updateGameArea() {
       bg.update();
       //nugget.update();
       fries();
+      displayMnScr.update();
       bettys();
       jack.newPos();
       jack.update();
@@ -312,7 +346,8 @@ function updateGameArea() {
       //deathAnimation.update();
     break;
 
-    case "paused":
+    case "startMenu":
+    desc.text = info;
     if (!bgMusic.paused) {
       bgMusic.pause();
     }
@@ -326,6 +361,14 @@ function updateGameArea() {
       desc[i].update();
     }
 
+      break;
+      case "paused":
+      desc.text = pauseInfo;
+      rect.update();
+      stateText.update();
+      pressESC.update();
+      displayMnScr.update();
+      desc.update();
       break;
   }
 }

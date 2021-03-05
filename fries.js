@@ -22,6 +22,9 @@ function fries() {
             betty.splice(g, 1);
             deathSound.play();
             deathAnimation.update();
+            money++;
+            score++;
+            reasignMnScr();
         }
       }
     }
