@@ -26,8 +26,19 @@
             default:
             }
 
-         if (betty[i].hit(jack)) {
 
+               if (betty[i].hit(jack)) {
+                 extraLives--;
+                 reasignMnScr();
+                 deathAnimation.x = betty[i].x;
+                 deathAnimation.y = betty[i].y;
+                 betty.splice(i, 1);
+                 deathSound.play();
+                 if (extraLives < 0) {
+                   betty.splice(0, betty.length+1);
+                   gameState = "Gameover";
+                   extraLives = 3;
+                 }
               }
           }
   }

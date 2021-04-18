@@ -1,6 +1,5 @@
 var jack;
 var bg;
-//var speed = 0;
 var canvasWidth = 1400;
 var canvasHeight = 640;
 var rightPressed = false;
@@ -29,10 +28,9 @@ var date1;
 var stateText;
 var pressESC;
 var desc;
-var secretUpgrade = "Secret...";
-var info = "Earth is no more...\nwe the people escaped before the inevetable to a planet outside the galaxay.\nThe Americans shattered our dreams and hopes of a sustainable future on Earth.\nThey drove mother Earth to it's limits.\nNow that they've found us, a trail of death and devastation is upon us.\nHowever we know their weakness...\nThey can't resist fatty food and we have an limitless supply of deep-fried fries.\nYou're our best soldier, shower the Americans in what they crave\nVictory shall be ours!";
-var pauseInfo = "Controlls:\nMove with [A] and [D]\n[K] - Shoot\n[Spacebar] - Jump\nUpgrades:\n[I] - Increase shoot speed\n[O] - Clears Americans off floor\n[P] - " +secretUpgrade+"\nTip: Remember that you can buy upgrades or clear bottom floor with DB\nDB hearts stands for diabetes hearts and it's a common curency here\ngained from killing Americans; they truly are something special.";
-var money = 100;
+var info = "Earth is no more...\nwe the people escaped before the inevetable to a planet outside the galaxay.\nThe Americans shattered our dreams and hopes of a sustainable future on Earth.\nThey drove mother Earth to it's limits.\nNow that they've found us, a trail of death and devastation is upon us.\nHowever we know their weakness...\nThey cannot resist fatty food and we have an limitless supply of deep-fried fries.\nYou're our best soldier, shower the Americans in what they crave\nVictory shall be ours!";
+var pauseInfo = "Controlls:\nMove with [A] and [D]\n[K] - Shoot\n[Spacebar] - Jump\nUpgrades:\n[I] - Increase shoot speed\n[O] - Clears Americans off floor\nTip: Remember that you can buy upgrades or clear bottom floor with DB\nDB hearts stands for diabetes hearts and it's a common curency here\ngained from killing Americans; they truly are something special.";
+var money = 0;
 var displayMnScr;
 var score = 0;
 var displayScore;
@@ -45,7 +43,29 @@ var doubleTapText;
 var doubleTapCost = 10;
 var onlyBuyOnce = true;
 var firerate = 0.7;
+var mcSpecialCost = 75;
+var mcSpecialText;
+var mcSpecial;
+var extraLives = 3;
 
+function initiateValues() {
+  money = 0;
+  score = 0;
+  spawnrate = 4;
+  clearFloorCost = 30;
+  doubleTapCost = 10;
+  onlyBuyOnce = true;
+  firerate = 0.7;
+  mcSpecialCost = 75;
+  extraLives = 3;
+  firstBetty = false;
+  spawnBettyCountdown = true;
+  reasignMnScr();
+  doubleTap.update();
+  doubleTapText.update();
+  doubleTapText.text = "[I]\nDouble Tap\n"+doubleTapCost+" DB";
+  clearFloorText.text = "[O]\nClear Floor\n"+clearFloorCost+" DB";
+}
 function startGame() {
     jack = new component(70, 114, "jack.png",(canvasWidth/2)-35 ,canvasHeight-114, "image");
     bg = new component(canvasWidth, canvasHeight, "bakgrund.png",0,0, "image");
@@ -61,7 +81,7 @@ function startGame() {
     desc = new component("24px brodtext", info, "white", 30, 150, "text");
     desc.textAlign = "left";
     desc.offsetSpace = 20;
-    displayMnScr = new component("32px cod", "Score: "+score+"\nDB hearts: "+money, "white", 10, 40, "text");
+    displayMnScr = new component("32px cod", "Score: "+score+"\nDB hearts: "+money+"\nExtra Lives: "+extraLives, "white", 10, 40, "text");
     displayMnScr.textAlign = "left";
     clearFloorText = new component("16px brodtext", "[O]\nClear Floor\n"+clearFloorCost+" DB", "white", canvasWidth - 75, canvasHeight-35, "text");
     clearFloorText.textAlign = "center";
@@ -117,7 +137,7 @@ switch (countdown) {
 }
 }
 function reasignMnScr() {
-  displayMnScr.text = "Score: "+score+"\nDB hearts: "+money;
+  displayMnScr.text = "Score: "+score+"\nDB hearts: "+money+"\nExtra Lives: "+extraLives;
 }
 function difficulty() {
   if (score == 0) {
@@ -126,8 +146,10 @@ function difficulty() {
     spawnrate *= 0.993;
   } else if (score > 21 && score < 41) {
     spawnrate *= 0.98;
-  } else if (score > 99) {
+  } else if (score > 99 && score < 155) {
     spawnrate = 2;
+  } else if (score >= 155){
+    spawnrate = 0.5;
   }
 }
 
@@ -153,6 +175,12 @@ var myGameArea = {
           }
           if (e.keyCode == 75) {
             shootingPressed = true;
+          }
+          if (e.keyCode == 82){
+            if (gameState == "Gameover"){
+              gameState = "startMenu";
+              initiateValues();
+            }
           }
           if (e.keyCode == 27) { //Klicka esc för att pausa om man spelar eller starta igen om man är pausad
             if (gameState == "playing") {
@@ -338,7 +366,7 @@ function component(width, height, color, x, y, type) {
       if ((((entity2Left <= thisLeft) && (entity2Right >= thisRight)) || ((entity2Right >= thisLeft) && (entity2Right <= thisRight) || ((entity2Left <= thisRight) && (entity2Left >= thisLeft)))) &&
        ((entity2Top <= thisTop) && ((entity2Bottom >= thisBottom)) || (((entity2Bottom >= thisBottom) && (entity2Bottom <= thisTop)) || ((entity2Top >= thisTop) && (entity2Top <= thisBottom))))){
         return true;
-      }
+      } else return false;
     };
 
     this.nrHits = function(health) {
@@ -358,14 +386,13 @@ function updateGameArea() {
     case "playing":
       if (bgMusic.paused) {
         if (!firstBetty) {
-          date1 = (Date.now() + (13.8 * 1000));
+          bgMusic.currentTime = 0;
+          date1 = (Date.now() + (13.8 * 1000)); //dehär är för att tajma beatet med den första spawnade betty fungerar endast om det inte pausas innan den första spawnar
         }
         bgMusic.play();
-        console.log(date1);
       }
       myGameArea.clear();
       bg.update();
-      //nugget.update();
       fries();
       displayMnScr.update();
       clearFloor.update();
@@ -381,6 +408,7 @@ function updateGameArea() {
     break;
 
     case "startMenu":
+    stateText.text = "Start Mission";
     desc.text = info;
     if (!bgMusic.paused) {
       bgMusic.pause();
@@ -391,7 +419,6 @@ function updateGameArea() {
     pressESC.update();
     desc.update();
     for (i = 0; i < desc.length; i += 1) {
-      console.log("Updates");
       desc[i].update();
     }
 
@@ -405,6 +432,17 @@ function updateGameArea() {
       stateText.update();
       pressESC.update();
       displayMnScr.update();
+      desc.update();
+      break;
+
+      case "Gameover":
+      if (!bgMusic.paused) {
+        bgMusic.pause();
+      }
+      desc.text = "\nYour score was: "+score+". \n\nThe Americans won this war, maybe it's possible to try again... \n\n[R] - To restart";
+      rect.update();
+      stateText.text = "Game Over";
+      stateText.update();
       desc.update();
       break;
   }
